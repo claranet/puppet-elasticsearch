@@ -85,10 +85,10 @@ define elasticsearch::service::systemd(
     $service_enable = false
   }
 
-  $notify_service = $elasticsearch::restart_config_change ? {
-    true  => [ Exec["systemd_reload_${name}"], Service["elasticsearch-instance-${name}"] ],
-    false => Exec["systemd_reload_${name}"]
-  }
+  # $notify_service = $elasticsearch::restart_config_change ? {
+  #   true  => [ Exec["systemd_reload_${name}"], Service["elasticsearch-instance-${name}"] ],
+  #   false => Exec["systemd_reload_${name}"]
+  # }
 
   if ( $ensure == 'present' ) {
 
@@ -101,7 +101,7 @@ define elasticsearch::service::systemd(
         group  => '0',
         mode   => '0644',
         before => Service["elasticsearch-instance-${name}"],
-        notify => $notify_service,
+        # notify => $notify_service,
       }
 
     } else {
@@ -126,7 +126,7 @@ define elasticsearch::service::systemd(
         lens    => 'Shellvars.lns',
         changes => template("${module_name}/etc/sysconfig/defaults.erb"),
         before  => Service["elasticsearch-instance-${name}"],
-        notify  => $notify_service,
+        # notify  => $notify_service,
       }
     }
 
@@ -164,12 +164,12 @@ define elasticsearch::service::systemd(
         package_name      => $elasticsearch::package_name,
         pid_dir           => $elasticsearch::pid_dir,
         user              => $elasticsearch::elasticsearch_user,
-        notify            => $notify_service,
+        # notify            => $notify_service,
       }
       -> file { "${elasticsearch::params::systemd_service_path}/elasticsearch-${name}.service":
         ensure => $ensure,
         before => Service["elasticsearch-instance-${name}"],
-        notify => $notify_service,
+        # notify => $notify_service,
       }
 
     }
@@ -181,23 +181,23 @@ define elasticsearch::service::systemd(
     file { "${elasticsearch::params::systemd_service_path}/elasticsearch-${name}.service":
       ensure    => 'absent',
       subscribe => Service["elasticsearch-instance-${name}"],
-      notify    => Exec["systemd_reload_${name}"],
+      # notify    => Exec["systemd_reload_${name}"],
     }
 
     file { "${elasticsearch::params::defaults_location}/elasticsearch-${name}":
       ensure    => 'absent',
       subscribe => Service["elasticsearch-instance-${name}"],
-      notify    => Exec["systemd_reload_${name}"],
+      # notify    => Exec["systemd_reload_${name}"],
     }
 
     $service_require = undef
 
   }
 
-  exec { "systemd_reload_${name}":
-    command     => '/bin/systemctl daemon-reload',
-    refreshonly => true,
-  }
+  # exec { "systemd_reload_${name}":
+  #   command     => '/bin/systemctl daemon-reload',
+  #   refreshonly => true,
+  # }
 
   # action
   service { "elasticsearch-instance-${name}":
@@ -208,7 +208,7 @@ define elasticsearch::service::systemd(
     hasrestart => $elasticsearch::params::service_hasrestart,
     pattern    => $elasticsearch::params::service_pattern,
     provider   => 'systemd',
-    require    => $service_require,
+    # require    => $service_require,
   }
 
 }
